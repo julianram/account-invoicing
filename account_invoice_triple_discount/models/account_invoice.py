@@ -5,6 +5,10 @@
 from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 
+import logging
+import wdb
+
+_logger = logging.getLogger(__name__)
 
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
@@ -44,18 +48,29 @@ class AccountInvoiceLine(models.Model):
     @api.multi
     @api.depends('discount2', 'discount3')
     def _compute_price(self):
+        self.invalidate_cache(
+            fnames=['discount','discount2','discount3'],
+            ids=self.ids)
+        prev_values = dict()
         for line in self:
-            prev_price_unit = line.price_unit
-            prev_discount = line.discount
+            prev_values[line] = dict(
+                price_unit=line.price_unit,
+                discount= line.discount,
+                discount2=line.discount2,
+                discount3=line.discount3,
+            )
             price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
             price_unit *= (1 - (line.discount2 or 0.0) / 100.0)
             price_unit *= (1 - (line.discount3 or 0.0) / 100.0)
-            line.update({
-                'price_unit': price_unit,
+            line._cache.update({
+                'price_unit': price_unit ,
                 'discount': 0.0,
             })
             super(AccountInvoiceLine, line)._compute_price()
-            line.update({
-                'price_unit': prev_price_unit,
-                'discount': prev_discount,
-            })
+        self.invalidate_cache(
+            fnames=['discount', 'discount2', 'discount3'],
+            ids=[l.id for l in list(prev_values.keys())])
+        for line, prev_vals_dict in list(prev_values.items()):
+            line._cache.update(prev_vals_dict)
+           
+         
