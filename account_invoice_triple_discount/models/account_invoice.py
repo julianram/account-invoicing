@@ -6,7 +6,7 @@ from odoo import api, fields, models
 from odoo.addons import decimal_precision as dp
 
 import logging
-import wdb
+
 
 _logger = logging.getLogger(__name__)
 
