@@ -49,7 +49,7 @@ class AccountInvoiceLine(models.Model):
     @api.depends('discount2', 'discount3')
     def _compute_price(self):
         self.invalidate_cache(
-            fnames=['discount','discount2','discount3'],
+            fnames=['discount2','discount3'],
             ids=self.ids)
         prev_values = dict()
         _logger.info("<<<< GUARDA CACHE >>>>>")
@@ -70,7 +70,7 @@ class AccountInvoiceLine(models.Model):
             })
             super(AccountInvoiceLine, line)._compute_price()
         self.invalidate_cache(
-            fnames=['discount', 'discount2', 'discount3'],
+            fnames=['discount2', 'discount3'],
             ids=[l.id for l in list(prev_values.keys())])
         for line, prev_vals_dict in list(prev_values.items()):
             _logger.info("<<<<< ACTUALIZA CACHE >>>>>")
