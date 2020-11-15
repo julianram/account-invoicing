@@ -52,6 +52,7 @@ class AccountInvoiceLine(models.Model):
             fnames=['discount','discount2','discount3'],
             ids=self.ids)
         prev_values = dict()
+        _logger.info("<<<< GUARDA CACHE >>>>>")
         for line in self:
             prev_values[line] = dict(
                 price_unit=line.price_unit,
@@ -59,6 +60,7 @@ class AccountInvoiceLine(models.Model):
                 discount2=line.discount2,
                 discount3=line.discount3,
             )
+            _logger.info(prev_values)
             price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
             price_unit *= (1 - (line.discount2 or 0.0) / 100.0)
             price_unit *= (1 - (line.discount3 or 0.0) / 100.0)
@@ -71,6 +73,9 @@ class AccountInvoiceLine(models.Model):
             fnames=['discount', 'discount2', 'discount3'],
             ids=[l.id for l in list(prev_values.keys())])
         for line, prev_vals_dict in list(prev_values.items()):
+            _logger.info("<<<<< ACTUALIZA CACHE >>>>>")
+            _logger.info(line)
+            _logger.info(prev_vals_dict)
             line._cache.update(prev_vals_dict)
            
          
